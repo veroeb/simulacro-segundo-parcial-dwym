@@ -1,56 +1,111 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
-  SafeAreaView,
+  View,
   FlatList,
-  StyleSheet,
-  ActivityIndicator,
   Text,
+  StyleSheet,
+  SafeAreaView,
+  TouchableOpacity,
 } from "react-native";
 import PlanetCard from "../components/PlanetCard";
+import { useFocusEffect, useRoute, RouteProp } from "@react-navigation/native";
 
 interface Planet {
   id: number;
   name: string;
   image: string;
+  description: string;
+  moons: number;
+  moon_names: string[];
 }
 
-const SolarSystem = () => {
+type SolarSystemRouteParams = {
+  SolarSystem: {
+    refresh?: boolean;
+  };
+};
+
+const SolarSystem: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const route = useRoute<RouteProp<SolarSystemRouteParams, "SolarSystem">>();
   const [planets, setPlanets] = useState<Planet[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchPlanets = async () => {
-      try {
-        const response = await fetch("http://192.168.1.11:8000/planets");
-        const data = await response.json();
+  const fetchPlanets = () => {
+    setIsLoading(true);
+    fetch("http://192.168.1.21:8000/planets")
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to fetch planets.");
+        }
+        return res.json();
+      })
+      .then((data) => {
         setPlanets(data);
-      } catch (error) {
-        console.error("Error fetching planets:", error);
-      } finally {
-        setLoading(false);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError("Could not load planets. Please try again later.");
+        setIsLoading(false);
+      });
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (route.params?.refresh) {
+        fetchPlanets();
+        navigation.setParams({ refresh: null });
+      } else {
+        fetchPlanets();
       }
-    };
+    }, [route.params?.refresh])
+  );
 
-    fetchPlanets();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <ActivityIndicator size="large" color="#fff" style={styles.loading} />
+      <View style={styles.loading}>
+        <Text style={styles.loadingText}>Loading planets...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.loading}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
     );
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Galaxy View</Text>
       <FlatList
         data={planets}
-        renderItem={({ item }) => <PlanetCard planet={item} />}
         keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <PlanetCard
+            planet={item}
+            onPress={() =>
+              navigation.navigate("PlanetDetails", {
+                id: item.id,
+                planet: item,
+              })
+            }
+          />
+        )}
         numColumns={2}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
       />
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate("AddPlanet")}
+        >
+          <Text style={styles.buttonText}>Add Planet</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
@@ -60,23 +115,43 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#000",
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginVertical: 20,
-    color: "#fff",
-  },
   listContainer: {
-    justifyContent: "space-between",
     paddingHorizontal: 10,
     paddingBottom: 20,
+    alignItems: "center",
   },
   loading: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#000",
+  },
+  loadingText: {
+    color: "#fff",
+    fontSize: 18,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 16,
+    textAlign: "center",
+  },
+  buttonContainer: {
+    marginTop: 10,
+    marginBottom: 10,
+    alignSelf: "center",
+  },
+  button: {
+    backgroundColor: "#1e90ff",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

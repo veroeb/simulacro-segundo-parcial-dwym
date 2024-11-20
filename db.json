@@ -21,7 +21,9 @@
       "name": "Earth",
       "description": "The third planet from the Sun and the only known planet to support life.",
       "moons": 1,
-      "moon_names": ["Moon"],
+      "moon_names": [
+        "Moon"
+      ],
       "image": "https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg"
     },
     {
@@ -29,7 +31,10 @@
       "name": "Mars",
       "description": "The fourth planet from the Sun, often called the 'Red Planet'.",
       "moons": 2,
-      "moon_names": ["Phobos", "Deimos"],
+      "moon_names": [
+        "Phobos",
+        "Deimos"
+      ],
       "image": "https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg"
     },
     {

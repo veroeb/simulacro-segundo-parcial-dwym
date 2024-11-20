@@ -1,24 +1,36 @@
 import React from "react";
-import { View, Text, Image, StyleSheet, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+} from "react-native";
 
 interface Planet {
-  image: string;
+  id: number;
   name: string;
+  image: string;
 }
 
-const PlanetCard = ({ planet }: { planet: Planet }) => {
+const PlanetCard = ({
+  planet,
+  onPress,
+}: {
+  planet: Planet;
+  onPress: () => void;
+}) => {
   return (
-    <View style={styles.card}>
+    <TouchableOpacity onPress={onPress} style={styles.card}>
       <Image source={{ uri: planet.image }} style={styles.image} />
       <Text style={styles.name}>{planet.name}</Text>
-    </View>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    // backgroundColor: '#fff',
-    // borderRadius: 10,
     padding: 10,
     margin: 10,
     alignItems: "center",
@@ -26,14 +38,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 2,
-    // elevation: 5,
     width: Dimensions.get("window").width / 2 - 30,
   },
   image: {
     width: 140,
     height: 140,
     resizeMode: "cover",
-    // borderRadius: 70,
   },
   name: {
     marginTop: 10,
